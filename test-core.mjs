@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {normalizeNoaaRows,extractKp,latestRow,parseOvation,apparentElevationDeg,analyzeOvationForObserver,scoreAuroraActivity,combinedNicoleIndex} from './js/core.js';
+const old=[['time_tag','Kp','Kp_fraction'],['2026-10-01 00:00:00.000','5','0.33'],['2026-10-01 03:00:00.000','6','0.00']];
+const nr=normalizeNoaaRows(old);assert.equal(nr.length,2);assert.equal(extractKp(nr[1]),6);
+const modern=[{time_tag:'2026-10-01T00:00:00Z',Kp:4.3},{time_tag:'2026-10-01T03:00:00Z',Kp:5.7}];assert.equal(extractKp(latestRow(modern)),5.7);
+const ov=parseOvation({'Observation Time':'a','Forecast Time':'b',coordinates:[[140,55,20],[143,45,0]]});assert.equal(ov.points.length,2);
+assert(apparentElevationDeg(0,250)>89);
+const an=analyzeOvationForObserver(ov,43,143,{threshold:1,altitudeKm:250});assert(an.bestVisible);assert(an.bestVisible.distanceKm>0);
+const act=scoreAuroraActivity({kp:7,bz:-15,bt:20,wind:700,dst:-100,localOvation:10,visibleElevation:5});assert(act.score>50);
+const idx=combinedNicoleIndex(80,70);assert(idx.score>70);
+console.log('core tests passed', {elevation:an.bestVisible.elevationDeg,activity:act.score,index:idx.score});
