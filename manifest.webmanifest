@@ -1,15 +1,24 @@
 {
-  "name":"Nicole the Auroragazer",
-  "short_name":"Auroragazer",
-  "description":"地点と時間ごとのオーロラ観測可能性を評価するNicoleシリーズの観測支援アプリ。",
-  "start_url":"./",
-  "scope":"./",
-  "display":"standalone",
-  "background_color":"#061316",
-  "theme_color":"#061316",
-  "orientation":"any",
-  "icons":[
-    {"src":"icon-192.png","sizes":"192x192","type":"image/png"},
-    {"src":"icon-512.png","sizes":"512x512","type":"image/png"}
+  "name": "Nicole the Auroragazer",
+  "short_name": "Auroragazer",
+  "description": "全球オーロラ監視・予測・観測支援PWA",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#061017",
+  "theme_color": "#061017",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }
