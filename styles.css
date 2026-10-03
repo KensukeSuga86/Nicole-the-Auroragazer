@@ -37,3 +37,33 @@ dialog{width:min(680px,92vw);border:1px solid #285466;border-radius:16px;backgro
 @media(max-width:640px){.app-header{align-items:flex-start;flex-direction:column;padding-top:16px}.header-actions{width:100%}.header-actions .btn{flex:1}.tabs{top:180px}.metrics-grid{grid-template-columns:repeat(2,1fr)}.three-col,.sources-list{grid-template-columns:1fr}.two-assessments{grid-template-columns:1fr}.reason{grid-template-columns:1fr auto}.reason .impact{grid-column:1/-1;text-align:left}.section-head{align-items:flex-start;flex-direction:column}.segmented{width:100%}.segmented button{flex:1}.edu-scene{height:270px}.sun{font-size:4.5rem}.earth{font-size:3.6rem}.magnetosphere{width:190px;height:140px}.edu-steps{grid-template-columns:1fr}.exposure-result{grid-template-columns:1fr}.exposure-result p{grid-column:auto}footer{flex-direction:column}.panel{padding:14px}}
 .history-controls{display:grid;grid-template-columns:auto minmax(120px,1fr) auto;gap:10px;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}.history-controls input[type=range]{width:100%}
 @media(max-width:640px){.history-controls{grid-template-columns:1fr}.history-controls .btn{width:100%}}
+
+/* 2026-10-03 iPhone / narrow-screen layout hotfix */
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+main,.tab-panel,.grid,.hero-grid,.panel,.index-card,.assessment-card,.metric,.section-head,.panel-title,.settings-form,.camera-form,.education,.guide{min-width:0;max-width:100%}
+img,svg,canvas{max-width:100%}
+.table-wrap{width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.timeline-table{width:100%;max-width:100%;-webkit-overflow-scrolling:touch}
+.panel-title{flex-wrap:wrap}
+.inline-form,.coord-form,.inline-controls,.map-toolbar,.map-notes{max-width:100%}
+.inline-form>* ,.coord-form>* ,.inline-controls>*{min-width:0;max-width:100%}
+.search-result{min-width:0;flex-wrap:wrap}.search-result>*{min-width:0;max-width:100%}
+.guide{min-width:0}.guide details{min-width:0;max-width:100%}.guide .guide-body{min-width:0;max-width:100%;overflow-wrap:anywhere}.guide table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.event-body,.event-meta,.sky-readout,.location-line,.reason-list{min-width:0;overflow-wrap:anywhere}
+
+@media(max-width:640px){
+  main{width:100%;padding-left:12px;padding-right:12px}
+  .panel,.index-card,.assessment-card,.metric{width:100%;max-width:100%}
+  .panel-title{align-items:flex-start}
+  .panel-title h2,.panel-title h3{min-width:0;overflow-wrap:anywhere}
+  .inline-form,.coord-form,.inline-controls{width:100%;flex-direction:column;align-items:stretch}
+  .inline-form input,.coord-form label,.inline-controls label,.inline-form .btn,.coord-form .btn,.inline-controls .btn{width:100%;min-width:0;max-width:100%}
+  .coord-form label input{width:100%;min-width:0}
+  .settings-form label{grid-template-columns:1fr;align-items:stretch}
+  .settings-form label input:not([type=range]),.settings-form label select{width:100%;min-width:0;max-width:100%}
+  .segmented{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .segmented button{min-width:0;padding-left:10px;padding-right:10px}
+  .map-toolbar,.map-notes{align-items:flex-start}
+  .toast{left:12px;right:12px;bottom:12px;max-width:none}
+  dialog{width:calc(100vw - 24px);max-width:calc(100vw - 24px);padding:20px}
+}
