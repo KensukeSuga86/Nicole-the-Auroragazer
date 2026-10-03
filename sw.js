@@ -1,4 +1,4 @@
-const CACHE='nicole-auroragazer-v0.2.0-mobile-r4';
+const CACHE='nicole-auroragazer-v0.2.0-mobile-r5';
 const CACHE_PREFIX='nicole-auroragazer-';
 const SHELL=['./','./index.html','./styles.css','./js/app.js','./js/core.js','./js/data.js','./manifest.webmanifest','./assets/icon-192.png','./assets/icon-512.png','./assets/apple-touch-icon.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())));
