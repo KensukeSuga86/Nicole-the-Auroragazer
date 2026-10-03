@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2026-10-03 — iPhone narrow-screen layout hotfix
+- Prevented page-level horizontal overflow on narrow iPhone screens.
+- Made tables scroll inside their own containers instead of widening the page.
+- Made forms, settings controls, panel headers, dialogs and search results fit the viewport.
+- Bumped the PWA shell cache to `mobile-r4`.
+- Limited Service Worker cache cleanup to Nicole 3 cache names only.
+
 ## v0.2.0 — 2026-10-02
 
 ### Added
