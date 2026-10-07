@@ -36,21 +36,37 @@ function setStatus(text){setText('#dataStatus',text)}
 function init(){
   bindTabs(); bindActions(); renderSettings(); renderLocation(); renderFavorites(); renderGuide(); renderEducation(0); updateNetwork();
   window.addEventListener('online',()=>{updateNetwork();refreshAll()}); window.addEventListener('offline',updateNetwork);
-  if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  // Offline cache for the installed PWA (not while developing on this machine).
+  const local=/^(127\.0\.0\.1|localhost|\[::1\])$/.test(location.hostname);
+  if('serviceWorker' in navigator && !local) navigator.serviceWorker.register('./sw.js').catch(()=>{});
   loadHistory().then(()=>renderHistoryControls());
-  refreshGlobal();
-  if(state.location) refreshLocationData();
-  fetchSolarEvents();
+  refreshAll();
   configureAutoRefresh();
   renderCamera();
 }
 
 function bindTabs(){
-  $$('.tabs button').forEach(b=>b.addEventListener('click',()=>openTab(b.dataset.tab)));
+  $$('.tabs button, .header-actions [data-tab]').forEach(b=>b.addEventListener('click',()=>openTab(lastInGroup[b.dataset.group]||b.dataset.tab)));
+  $('#btnGpsHero')?.addEventListener('click',()=>$('#btnGps').click());
   $$('[data-open-tab]').forEach(e=>e.addEventListener('click',ev=>{if(ev.target.closest('button')||e.dataset.openTab)openTab(e.dataset.openTab)}));
 }
+// Navigation: five sections; sections with several views show sub-tabs (the last view is remembered).
+const TAB_GROUPS={home:['home'],aurora:['earth','forecast','solar'],sites:['sites','sky'],camera:['camera'],learn:['learn','guide'],settings:['settings']};
+const TAB_LABELS={earth:'🌍 地球オーロラ',forecast:'📈 予測',solar:'☀️ 太陽イベント',sites:'📍 観測地',sky:'🧭 空で見る',learn:'🎓 しくみ',guide:'📖 使い方・解説'};
+const lastInGroup={};
+function groupOf(name){return Object.keys(TAB_GROUPS).find(g=>TAB_GROUPS[g].includes(name))||'home'}
+function renderSubtabs(name){
+  const g=groupOf(name),members=TAB_GROUPS[g],box=$('#subtabs');
+  if(!box)return;
+  if(members.length<2){box.hidden=true;box.innerHTML='';return}
+  box.hidden=false;
+  box.innerHTML=members.map(m=>`<button data-sub="${m}" class="${m===name?'active':''}">${TAB_LABELS[m]||m}</button>`).join('');
+  box.querySelectorAll('[data-sub]').forEach(b=>b.addEventListener('click',()=>openTab(b.dataset.sub)));
+}
 function openTab(name){
-  $$('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
+  const group=groupOf(name);lastInGroup[group]=name;
+  $$('.tabs button, .header-actions [data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.group===group));
+  renderSubtabs(name);
   $$('.tab-panel').forEach(p=>p.classList.toggle('active',p.id===`tab-${name}`));
   if(name==='earth') drawAuroraMaps(); if(name==='forecast') renderForecast(); if(name==='sky') drawSky(); if(name==='sites')renderFavorites();
   window.scrollTo({top:0,behavior:'smooth'});
@@ -117,6 +133,7 @@ async function refreshLocationData(){
 
 function renderGlobal(){
   const s=state.space||{}; setText('#mKp',fmt(s.kp,1));setText('#mKpLabel',kpLabel(s.kp));setText('#mBz',fmt(s.bz,1));setText('#mBt',fmt(s.bt,1));setText('#mWind',fmtInt(s.wind));setText('#mDst',fmtInt(s.dst));
+  decorateMetrics(s);
   if(state.ovation){setText('#ovationTimes',`観測 ${fmtTime(state.ovation.observationTime)} → 予測 ${fmtTime(state.ovation.forecastTime)}`);setText('#earthValid',fmtTime(state.ovation.forecastTime));setText('#homeMapCaption',`OVATION 予測時刻 ${fmtTime(state.ovation.forecastTime)}`)}
   drawHomeMap();drawAuroraMaps();renderForecast();
 }
@@ -144,7 +161,8 @@ function recompute(){
 }
 
 function renderAnalysis(){
-  const a=state.analysis;if(!a)return;const hasLoc=!!state.location;setText('#indexScore',hasLoc?a.idx.score:'—');setText('#indexLevel',hasLoc?`${a.idx.level} · ${a.idx.ja}`:'地点を設定してください');setText('#eyeAssess',hasLoc?a.assess.eye:'—');setText('#cameraAssess',hasLoc?a.assess.camera:'—');setText('#mOvation',hasLoc?fmtInt(a.ova.localIntensity):'—');
+  const a=state.analysis;if(!a)return;const hasLoc=!!state.location;setText('#indexScore',hasLoc?a.idx.score:'—');setText('#indexLevel',hasLoc?`${a.idx.level} · ${a.idx.ja}`:'地点を設定してください');
+  setIndexGauge(hasLoc?a.idx.score:null);setText('#eyeAssess',hasLoc?a.assess.eye:'—');setText('#cameraAssess',hasLoc?a.assess.camera:'—');setText('#mOvation',hasLoc?fmtInt(a.ova.localIntensity):'—');
   setText('#activityBadge',`活動 ${a.activity.score}/100`);setText('#visibilityBadge',`視認性 ${a.visibility.score}/100`);
   const s=state.space||{};const rows=[
     ['Kp',fmt(s.kp,1),kpLabel(s.kp)],['IMF Bz',`${fmt(s.bz,1)} nT`,s.bz<=-10?'強い南向き':s.bz<0?'南向き':'北向き/中立'],['太陽風',`${fmtInt(s.wind)} km/s`,s.wind>=700?'非常に高速':s.wind>=500?'高速':'通常域'],['Dst',`${fmtInt(s.dst)} nT`,s.dst<=-100?'強い磁気嵐':s.dst<=-50?'磁気嵐傾向':'弱い/平常'],['OVATION',fmtInt(a.ova.localIntensity),a.ova.bestVisible?`候補 ${fmt(a.ova.bestVisible.elevationDeg,1)}° ${formatDirection(a.ova.bestVisible.bearingDeg)}`:'可視候補なし']
@@ -197,8 +215,11 @@ function renderSolarEvents(){
   for(const x of d.gst||[]){const peak=(x.allKpIndex||[]).reduce((m,k)=>Math.max(m,safeNum(k.kpIndex,0)),0);events.push({type:'GST',time:x.startTime||x.gstID,title:'地磁気嵐',body:x.linkedEvents?.map(e=>e.activityID).join(' / ')||'',meta:[`最大Kp ${peak}`]})}
   for(const x of d.ips||[]){events.push({type:'IPS',time:x.eventTime||x.activityID,title:'惑星間衝撃波',body:x.location||'',meta:[]})}
   events.sort((a,b)=>Date.parse(b.time)-Date.parse(a.time));
-  const noaa=(state.space?.alerts||[]).slice(0,4).map(a=>({type:'NOAA',time:a.issue_datetime||a.issue_time||a.time_tag||'',title:a.product_id?`NOAA ${a.product_id}`:'NOAA Alert',body:(a.message||a.text||'').split('\n').slice(0,3).join(' '),meta:[]}));
-  const all=[...noaa,...events].slice(0,30);box.innerHTML=all.length?all.map(e=>`<article class="panel event-chain"><div class="event-time">${escapeHtml(fmtTime(e.time))}<br><b>${escapeHtml(e.type)}</b></div><div class="event-body"><strong>${escapeHtml(e.title)}</strong><p>${escapeHtml(e.body||'')}</p><div class="event-meta">${(e.meta||[]).map(m=>`<span>${escapeHtml(m)}</span>`).join('')}</div></div></article>`).join(''):'<article class="panel empty">直近7日間に表示できるイベントがありません。</article>';
+  // NOAA notices from the same 7 days only; everything newest first.
+  const since=Date.now()-7*86400000;
+  const noaa=(state.space?.alerts||[]).map(a=>({type:'NOAA',time:a.issue_datetime||a.issue_time||a.time_tag||'',title:a.product_id?`NOAA ${a.product_id}`:'NOAA Alert',body:(a.message||a.text||'').split('\n').slice(0,3).join(' '),meta:[]})).filter(e=>{const t=Date.parse(String(e.time).replace(' ','T')+(/Z|[+-]\d\d:?\d\d$/.test(e.time)?'':'Z'));return Number.isFinite(t)&&t>=since});
+  const tOf=e=>{const t=Date.parse(String(e.time).replace(' ','T')+(/Z|[+-]\d\d:?\d\d$/.test(e.time)?'':'Z'));return Number.isFinite(t)?t:0};
+  const all=[...noaa,...events].sort((a,b)=>tOf(b)-tOf(a)).slice(0,30);box.innerHTML=all.length?all.map(e=>`<article class="panel event-chain" data-type="${escapeHtml(e.type)}"><div class="event-time">${escapeHtml(fmtTime(e.time))}<br><b>${escapeHtml(e.type)}</b></div><div class="event-body"><strong>${escapeHtml(e.title)}</strong><p class="clamp" onclick="this.classList.toggle('clamp')" title="クリックで全文">${escapeHtml(e.body||'')}</p><div class="event-meta">${(e.meta||[]).map(m=>`<span>${escapeHtml(m)}</span>`).join('')}</div></div></article>`).join(''):'<article class="panel empty">直近7日間に表示できるイベントがありません。</article>';
 }
 
 async function searchPlaces(){const q=$('#placeQuery').value.trim();if(!q)return;$('#placeResults').innerHTML='<span class="micro">検索中…</span>';try{const rows=await geocodePlaces(q);$('#placeResults').innerHTML=rows.map((r,i)=>`<div class="search-result"><div><b>${escapeHtml(r.name)}</b><small>${escapeHtml([r.admin1,r.country].filter(Boolean).join(' / '))}<br>${r.lat.toFixed(4)}, ${r.lon.toFixed(4)}</small></div><div><button class="btn" data-set-place="${i}">設定</button><button class="btn" data-fav-place="${i}">☆</button></div></div>`).join('')||'<span class="micro">見つかりませんでした。</span>';$$('[data-set-place]').forEach(b=>b.onclick=()=>{const r=rows[Number(b.dataset.setPlace)];setLocation({lat:r.lat,lon:r.lon,name:r.name});refreshLocationData();openTab('home')});$$('[data-fav-place]').forEach(b=>b.onclick=()=>addFavorite(rows[Number(b.dataset.favPlace)]));}catch(e){$('#placeResults').innerHTML=`<span class="micro">検索失敗: ${escapeHtml(e.message)}</span>`}}
@@ -273,3 +294,27 @@ function toggleHistoryPlay(){if(state.historyTimer){clearInterval(state.historyT
 async function clearHistory(){try{const db=await openDb();const tx=db.transaction('ovation','readwrite');tx.objectStore('ovation').clear();await txDone(tx);db.close();state.history=[];renderHistoryControls();updateStorageInfo();toast('ローカル履歴を消去しました')}catch{}}
 
 init();
+
+// Home gauge (0–100) and the empty state before a place is set.
+function setIndexGauge(score){
+  const card=$('#indexCard'),ring=$('#indexRing');
+  if(card)card.classList.toggle('no-loc',score==null);
+  $('.hero-grid')?.classList.toggle('no-loc',score==null);
+  if(!ring)return;
+  const c=2*Math.PI*52,v=score==null?0:clamp(score,0,100);
+  ring.style.strokeDasharray=`${c*v/100} ${c}`;
+  ring.style.stroke=v>=70?'var(--green)':v>=45?'var(--aqua)':v>=25?'var(--amber)':'#5c7a88';
+}
+// Space-weather cards: a colour cue for how favourable each value is for aurora.
+function decorateMetrics(s){
+  const lv=(id,level)=>{const el=$(id)?.closest('.metric');if(el)el.dataset.level=level};
+  const kp=s.kp,bz=s.bz,bt=s.bt,w=s.wind,d=s.dst;
+  lv('#mKp',kp==null?'':kp>=6?'high':kp>=4?'watch':'calm');
+  lv('#mBz',bz==null?'':bz<=-10?'high':bz<=-3?'watch':'calm');
+  lv('#mBt',bt==null?'':bt>=20?'high':bt>=10?'watch':'calm');
+  lv('#mWind',w==null?'':w>=650?'high':w>=500?'watch':'calm');
+  lv('#mDst',d==null?'':d<=-100?'high':d<=-50?'watch':'calm');
+}
+// Keep the sticky navigation right under the header (its height depends on the screen width).
+function syncHeaderHeight(){const h=$('.app-header');if(h)document.documentElement.style.setProperty('--header-h',h.offsetHeight+'px')}
+window.addEventListener('resize',syncHeaderHeight);syncHeaderHeight();setTimeout(syncHeaderHeight,300);

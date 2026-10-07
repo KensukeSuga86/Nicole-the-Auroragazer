@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## v0.3.0 — 2026-10-08
+
+### UI
+- コンパクトなヘッダー（アイコン・状態表示を1行に。スマホでは更新・設定をアイコンボタンに）
+- ナビゲーションを5つに整理：ホーム / オーロラ（地球オーロラ・予測・太陽イベント）/ 観測地（観測地・空で見る）/ 撮影 / 学ぶ（しくみ・使い方）。設定はヘッダーの⚙。スマホでは画面下のタブバー
+- ホーム：Nicole INDEXを円形ゲージで表示。地点未設定時は「現在地を使う／地点を探す」の案内
+- 宇宙天気カードに好条件の目安を色で表示（注意＝黄、好条件＝緑）
+- 太陽イベントを新しい順に並べ、種類ごとの色、長い説明は3行で折りたたみ（クリックで全文）
+- 全球マップの高さを画面に合わせて制限
+
+### 修正
+- 太陽風速度が0 km/sと表示されていた問題（NOAAの新しい項目名 `proton_speed` に対応）
+- NASA DONKIの移転（2026-09-30、CCMC `https://ccmc.gsfc.nasa.gov/DONKI-API/get/`）に対応。APIキー不要
+- 起動直後に「データ未取得」のまま更新時刻が表示されなかった問題
+- 開発時（localhost）はService Workerを登録しない
+
 ## 2026-10-03 — iPhone narrow-screen layout hotfix
 - Prevented page-level horizontal overflow on narrow iPhone screens.
 - Made tables scroll inside their own containers instead of widening the page.

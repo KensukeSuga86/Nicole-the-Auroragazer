@@ -6,7 +6,8 @@ import {
 const NOAA = 'https://services.swpc.noaa.gov';
 const OPEN_METEO = 'https://api.open-meteo.com/v1';
 const GEO = 'https://geocoding-api.open-meteo.com/v1';
-const NASA = 'https://api.nasa.gov/DONKI';
+// DONKI moved on 2026-09-30 (CCMC): same parameters / responses, no API key, CORS open.
+const NASA = 'https://ccmc.gsfc.nasa.gov/DONKI-API/get';
 
 async function fetchJson(url, {timeout=15000, signal}={}) {
   const ctrl = new AbortController();
@@ -115,7 +116,7 @@ function utcDateString(d) { return d.toISOString().slice(0,10); }
 export async function fetchDonki(apiKey='DEMO_KEY', days=7) {
   const end = new Date();
   const start = new Date(end.getTime()-days*86400000);
-  const common = `startDate=${utcDateString(start)}&endDate=${utcDateString(end)}&api_key=${encodeURIComponent(apiKey||'DEMO_KEY')}`;
+  const common = `startDate=${utcDateString(start)}&endDate=${utcDateString(end)}`;
   const [cme,gst,ips] = await Promise.allSettled([
     fetchJson(`${NASA}/CME?${common}`,{timeout:20000}),
     fetchJson(`${NASA}/GST?${common}`,{timeout:20000}),

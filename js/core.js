@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.2.0';
+export const APP_VERSION = '0.3.0';
 export const EARTH_RADIUS_KM = 6371.0088;
 export const DEFAULT_AURORA_ALTITUDE_KM = 250;
 
@@ -73,7 +73,7 @@ export function extractDst(row) {
 }
 
 export function extractWindSpeed(row) {
-  return safeNum(getCaseInsensitive(row, ['WindSpeed','wind_speed','speed','solar_wind_speed','value']));
+  return safeNum(getCaseInsensitive(row, ['proton_speed','WindSpeed','wind_speed','speed','solar_wind_speed','value']));
 }
 
 export function extractBt(row) {

@@ -1,4 +1,4 @@
-# Nicole the Auroragazer v0.2.0
+# Nicole the Auroragazer v0.3.0
 
 Nicoleシリーズ第3作。全球オーロラ監視、宇宙天気、低緯度オーロラの見え方、地上の観測条件、撮影・学習を一つにまとめたPWAです。
 
@@ -35,9 +35,7 @@ Nicoleシリーズ第3作。全球オーロラ監視、宇宙天気、低緯度�
 NOAAは2026年3月に複数JSONを標準オブジェクト形式へ変更しました。本版は旧「先頭行がヘッダー」の配列形式と、新しいオブジェクト形式の両方を受け入れます。
 
 ### NASA DONKI
-`https://api.nasa.gov/DONKI/`
-
-初期値は `DEMO_KEY`。設定画面で個人のNASA API Keyを保存できます。キーはlocalStorageにのみ保存します。
+`https://ccmc.gsfc.nasa.gov/DONKI-API/get/`（2026年9月30日に api.nasa.gov / kauai から移転。パラメータ・応答形式は同じ、APIキー不要）
 
 ### Open-Meteo
 - Forecast API: 雲量、降水、視程、風、日の出入、月情報

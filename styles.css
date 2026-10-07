@@ -67,3 +67,97 @@ img,svg,canvas{max-width:100%}
   .toast{left:12px;right:12px;bottom:12px;max-width:none}
   dialog{width:calc(100vw - 24px);max-width:calc(100vw - 24px);padding:20px}
 }
+
+/* ===== v0.3.0 UI ===== */
+:root{--header-h:72px}
+/* Header: one compact row with the status inside */
+.app-header{align-items:center;padding:12px clamp(14px,3vw,40px);gap:14px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-icon{width:44px;height:44px;border-radius:11px;flex:none;box-shadow:0 0 0 1px rgba(98,242,212,.25),0 6px 18px rgba(0,0,0,.35)}
+.brand-text{min-width:0}
+.app-header h1{margin:2px 0 3px;font-size:clamp(1.15rem,2.2vw,1.7rem);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eyebrow{font-size:.62rem}
+.statusbar{padding:0;border:0;font-size:.74rem;gap:8px}
+.statusbar .pill{padding:1px 7px;font-size:.68rem}
+.header-actions{flex-wrap:nowrap}
+.header-actions .btn{min-height:38px}
+.btn.icon-only{width:40px;padding:0;font-size:1.1rem}
+.header-actions .btn.active{border-color:#2c8877;background:#15414a}
+/* Section navigation */
+.tabs{position:sticky;top:var(--header-h);gap:4px;padding:8px clamp(12px,3vw,40px);background:rgba(8,20,28,.94);backdrop-filter:blur(12px)}
+.tabs button{display:inline-flex;align-items:center;gap:6px;font-weight:600;min-height:38px;padding:0 14px;border-color:transparent}
+.tabs button i{font-style:normal}
+.tabs button.active{background:linear-gradient(135deg,#15414a,#10343c);border-color:#2c8877;color:var(--text)}
+.subtabs{display:flex;gap:6px;padding:10px clamp(14px,3vw,38px) 0;width:min(1500px,100%);margin:auto;overflow-x:auto}
+.subtabs[hidden]{display:none}
+.subtabs button{border:1px solid var(--line);background:#0a1c26;color:var(--muted);border-radius:999px;padding:7px 14px;cursor:pointer;white-space:nowrap;font-size:.9rem}
+.subtabs button.active{color:var(--text);border-color:#2c8877;background:#123a42}
+main{padding-top:16px}
+/* Home: gauge + empty state */
+.index-main{display:flex;align-items:center;gap:20px;margin-top:12px}
+.gauge{position:relative;width:150px;height:150px;flex:none}
+.gauge svg{width:100%;height:100%;transform:rotate(-90deg)}
+.gauge-track{fill:none;stroke:#143341;stroke-width:10}
+.gauge-ring{fill:none;stroke:var(--aqua);stroke-width:10;stroke-linecap:round;stroke-dasharray:0 400;transition:stroke-dasharray .8s ease,stroke .4s}
+.gauge .index-score{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;margin:0;font-size:3.1rem;letter-spacing:-.04em}
+.index-text .index-level{margin-top:0;font-size:1.25rem}
+.index-empty{display:none}
+.index-card.no-loc .index-main{display:none}
+.index-card.no-loc .index-empty{display:block;margin-top:14px}
+.index-empty p{margin:0 0 14px;line-height:1.6;color:#cfe5ec}
+.index-empty-actions{display:flex;gap:8px;flex-wrap:wrap}
+/* Space-weather cards: colour cue */
+.metric{position:relative;overflow:hidden}
+.metric::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent}
+.metric[data-level="calm"]::before{background:#3d6170}
+.metric[data-level="watch"]::before{background:var(--amber)}
+.metric[data-level="high"]::before{background:var(--green);box-shadow:0 0 14px var(--green)}
+.metric[data-level="watch"] strong{color:#ffe3a1}
+.metric[data-level="high"] strong{color:#b6ffc4}
+/* Panels: quieter, consistent rhythm */
+.panel,.index-card,.assessment-card,.metric{box-shadow:0 10px 30px rgba(0,0,0,.22)}
+.panel-title h2{font-size:1.15rem}
+.section-head h2{font-size:1.45rem}
+footer{padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+
+@media(max-width:1000px){.tabs{top:var(--header-h)}}
+/* Phones: compact header, bottom tab bar, tighter cards */
+@media(max-width:640px){
+  :root{--header-h:60px}
+  .app-header{flex-direction:row;align-items:center;padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top))}
+  .eyebrow,.header-actions .label,.t-pre{display:none}
+  .hero-grid.no-loc .assessment-card{display:none}
+  .brand-icon{width:36px;height:36px;border-radius:9px}
+  .app-header h1{font-size:1.05rem}
+  .header-actions{width:auto}
+  .header-actions .btn{flex:none;width:40px;padding:0}
+  .tabs{position:fixed;top:auto;bottom:0;left:0;right:0;z-index:20;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom));border-top:1px solid var(--line);border-bottom:0;overflow:visible}
+  .tabs button{flex:1;flex-direction:column;gap:2px;min-height:52px;padding:4px 0;font-size:.68rem;border-radius:12px}
+  .tabs button i{font-size:1.25rem;line-height:1}
+  body{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+  .subtabs{position:sticky;top:var(--header-h);z-index:9;background:rgba(6,16,23,.92);backdrop-filter:blur(10px);padding:8px 12px}
+  main{padding-top:12px}
+  .index-card,.assessment-card{padding:18px}
+  .gauge{width:118px;height:118px}
+  .gauge .index-score{font-size:2.5rem}
+  .index-main{gap:14px}
+  .metrics-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+  .metric{padding:10px;min-height:0}
+  .metric span{font-size:.72rem}
+  .metric strong{font-size:1.3rem;margin:5px 0 0}
+  .metric small{font-size:.66rem}
+  .two-assessments{grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+  .two-assessments>div{padding:12px}
+  .two-assessments strong{font-size:1.05rem}
+  .panel{padding:14px}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
+}
+/* Solar events: type colour and folded long notes */
+.event-chain{border-left:3px solid #2a5566}
+.event-chain[data-type="CME"]{border-left-color:#ff9f5a}
+.event-chain[data-type="GST"]{border-left-color:var(--green)}
+.event-chain[data-type="IPS"]{border-left-color:var(--blue)}
+.event-chain[data-type="NOAA"]{border-left-color:var(--amber)}
+.event-body p{color:#c7dbe3;line-height:1.6;cursor:pointer}
+.event-body p.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+#auroraCanvas{max-height:72vh;width:auto;margin:0 auto}

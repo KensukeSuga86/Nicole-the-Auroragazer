@@ -15,44 +15,56 @@
 </head>
 <body>
   <header class="app-header">
-    <div>
-      <div class="eyebrow">AURORA OBSERVATION ASSISTANT</div>
-      <h1>Nicole the Auroragazer</h1>
-      <p class="subtitle">地球のオーロラを読み、今いる場所からの見え方まで。</p>
+    <div class="brand">
+      <img class="brand-icon" src="assets/icon-192.png" alt="" width="40" height="40">
+      <div class="brand-text">
+        <div class="eyebrow">AURORA OBSERVATION ASSISTANT</div>
+        <h1><span class="t-pre">Nicole the </span>Auroragazer</h1>
+        <div id="statusBar" class="statusbar">
+          <span id="networkStatus" class="pill">ONLINE</span>
+          <span id="dataStatus">データ未取得</span>
+          <span id="lastUpdated">—</span>
+        </div>
+      </div>
     </div>
     <div class="header-actions">
-      <button id="btnGps" class="btn primary">📍 現在地</button>
-      <button id="btnRefresh" class="btn">↻ 更新</button>
+      <button id="btnGps" class="btn primary" title="現在地を使う">📍<span class="label"> 現在地</span></button>
+      <button id="btnRefresh" class="btn" title="データを更新">↻<span class="label"> 更新</span></button>
+      <button class="btn icon-only" data-tab="settings" data-group="settings" title="設定">⚙︎</button>
     </div>
   </header>
 
-  <div id="statusBar" class="statusbar">
-    <span id="networkStatus" class="pill">ONLINE</span>
-    <span id="dataStatus">データ未取得</span>
-    <span id="lastUpdated">—</span>
-  </div>
-
   <nav class="tabs" aria-label="メインナビゲーション">
-    <button data-tab="home" class="active">ホーム</button>
-    <button data-tab="earth">🌍 地球オーロラ</button>
-    <button data-tab="forecast">予測</button>
-    <button data-tab="solar">☀️ 太陽イベント</button>
-    <button data-tab="sites">観測地</button>
-    <button data-tab="sky">🌌 空で見る</button>
-    <button data-tab="camera">📷 撮影</button>
-    <button data-tab="learn">学ぶ</button>
-    <button data-tab="guide">使い方</button>
-    <button data-tab="settings">設定</button>
+    <button data-tab="home" data-group="home" class="active"><i>🏠</i><span>ホーム</span></button>
+    <button data-tab="earth" data-group="aurora"><i>🌌</i><span>オーロラ</span></button>
+    <button data-tab="sites" data-group="sites"><i>📍</i><span>観測地</span></button>
+    <button data-tab="camera" data-group="camera"><i>📷</i><span>撮影</span></button>
+    <button data-tab="learn" data-group="learn"><i>🎓</i><span>学ぶ</span></button>
   </nav>
+  <div id="subtabs" class="subtabs" hidden></div>
 
   <main>
     <section id="tab-home" class="tab-panel active">
       <div class="hero-grid">
-        <article class="index-card">
+        <article class="index-card" id="indexCard">
           <div class="card-kicker">NICOLE INDEX</div>
-          <div id="indexScore" class="index-score">—</div>
-          <div id="indexLevel" class="index-level">データ待ち</div>
-          <p class="micro">0–100の条件指数。出現確率ではありません。</p>
+          <div class="index-main">
+            <div class="gauge" aria-hidden="true">
+              <svg viewBox="0 0 120 120"><circle class="gauge-track" cx="60" cy="60" r="52"/><circle id="indexRing" class="gauge-ring" cx="60" cy="60" r="52"/></svg>
+              <div id="indexScore" class="index-score">—</div>
+            </div>
+            <div class="index-text">
+              <div id="indexLevel" class="index-level">データ待ち</div>
+              <p class="micro">今いる場所でオーロラを見られる条件を0–100で表した指数（出現確率ではありません）。</p>
+            </div>
+          </div>
+          <div class="index-empty">
+            <p>観測する場所を設定すると、今夜その場所から見えそうかを判定します。</p>
+            <div class="index-empty-actions">
+              <button class="btn primary" id="btnGpsHero">📍 現在地を使う</button>
+              <button class="btn" data-open-tab="sites">🔎 地点を探す</button>
+            </div>
+          </div>
         </article>
         <article class="assessment-card">
           <div class="card-kicker">現在地の観測目安</div>
@@ -206,8 +218,8 @@
         </article>
         <article class="panel settings-form">
           <h3>NASA DONKI</h3>
-          <label>NASA API Key <input id="settingNasaKey" type="password" placeholder="未設定時 DEMO_KEY"></label>
-          <p class="micro">APIキーはこの端末のlocalStorageにのみ保存します。</p>
+          <label hidden>NASA API Key <input id="settingNasaKey" type="password"></label>
+          <p class="micro">太陽イベントはNASA CCMCのDONKI（2026年9月30日に新しいAPIへ移行）から取得します。APIキーは不要です。</p>
         </article>
         <article class="panel">
           <h3>データ管理</h3>
@@ -233,7 +245,7 @@
   <dialog id="infoDialog"><button id="infoClose" class="dialog-close">×</button><h3 id="infoTitle"></h3><div id="infoBody"></div></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <footer><span>Nicole the Auroragazer v0.2.0</span><span>Data: NOAA SWPC / NASA DONKI / Open-Meteo</span></footer>
+  <footer><span>Nicole the Auroragazer v0.3.0</span><span>Data: NOAA SWPC / NASA DONKI / Open-Meteo</span></footer>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
