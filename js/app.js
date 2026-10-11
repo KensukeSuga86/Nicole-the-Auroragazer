@@ -202,10 +202,18 @@ function drawPolarInto(ctx,ov,hemi,rect,compact=false){
 function intensityColor(v){const t=clamp(v/30,0,1);if(t<.25)return`rgba(62,129,180,${.18+t})`;if(t<.5)return`rgba(75,215,163,${.3+t*.7})`;if(t<.75)return`rgba(248,224,96,${.5+t*.5})`;return`rgba(255,101,77,${.65+t*.35})`}
 
 function renderForecast(){
-  const rows=state.space?.kpForecast||[];const c=$('#kpChart'),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='#07131a';ctx.fillRect(0,0,c.width,c.height);const pad={l:48,r:20,t:20,b:42},W=c.width-pad.l-pad.r,H=c.height-pad.t-pad.b;
+  // NOAA's combined product contains a week of observed values before the actual forecast.
+  // Never present historical observations or stale cached records as a future forecast.
+  const now=Date.now();
+  const rows=(state.space?.kpForecast||[])
+    .map(r=>({...r,ms:Date.parse(r.time)}))
+    .filter(r=>Number.isFinite(r.ms)&&r.ms>=now-3*3600000&&r.ms<=now+4*86400000
+      &&String(r.observed||'').toLowerCase()!=='observed')
+    .sort((a,b)=>a.ms-b.ms);
+  const c=$('#kpChart'),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='#07131a';ctx.fillRect(0,0,c.width,c.height);const pad={l:48,r:20,t:20,b:42},W=c.width-pad.l-pad.r,H=c.height-pad.t-pad.b;
   ctx.strokeStyle='#244653';ctx.fillStyle='#8fa8b2';ctx.font='12px system-ui';for(let k=0;k<=9;k++){const y=pad.t+H-(k/9)*H;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+W,y);ctx.stroke();if(k%2===0)ctx.fillText(String(k),18,y+4)}
-  if(rows.length>1){const times=rows.map(r=>Date.parse(r.time)),min=Math.min(...times),max=Math.max(...times);ctx.strokeStyle='#63e6cf';ctx.lineWidth=3;ctx.beginPath();rows.forEach((r,i)=>{const x=pad.l+(times[i]-min)/(max-min||1)*W,y=pad.t+H-(clamp(r.kp,0,9)/9)*H;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();ctx.fillStyle='#b6ccd5';for(let i=0;i<rows.length;i+=Math.max(1,Math.ceil(rows.length/8))){const x=pad.l+(times[i]-min)/(max-min||1)*W;ctx.fillText(new Date(times[i]).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit'}),x-20,c.height-14)}}
-  $('#kpForecastTable').innerHTML=rows.length?`<table><thead><tr><th>時刻</th><th>Kp</th><th>状態</th></tr></thead><tbody>${rows.slice(0,30).map(r=>`<tr><td>${escapeHtml(fmtTime(r.time))}</td><td>${fmt(r.kp,1)}</td><td>${escapeHtml(kpLabel(r.kp))}</td></tr>`).join('')}</tbody></table>`:'<p class="micro">Kp予報を取得できていません。</p>';
+  if(rows.length>1){const times=rows.map(r=>r.ms),min=times[0],max=times.at(-1);ctx.strokeStyle='#63e6cf';ctx.lineWidth=3;ctx.beginPath();rows.forEach((r,i)=>{const x=pad.l+(times[i]-min)/(max-min||1)*W,y=pad.t+H-(clamp(r.kp,0,9)/9)*H;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();ctx.fillStyle='#b6ccd5';for(let i=0;i<rows.length;i+=Math.max(1,Math.ceil(rows.length/8))){const x=pad.l+(times[i]-min)/(max-min||1)*W;ctx.fillText(new Date(times[i]).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit'}),x-20,c.height-14)}}
+  $('#kpForecastTable').innerHTML=rows.length?`<table><thead><tr><th>時刻</th><th>Kp</th><th>区分</th><th>状態</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${escapeHtml(fmtTime(r.time))}</td><td>${fmt(r.kp,1)}</td><td>${String(r.observed).toLowerCase()==='estimated'?'推定':'予測'}</td><td>${escapeHtml(kpLabel(r.kp))}</td></tr>`).join('')}</tbody></table>`:'<p class="micro">現在有効なKp予報がありません。通信状況またはNOAAの配信状況を確認してください（過去の実測値は予報として表示しません）。</p>';
 }
 
 async function fetchSolarEvents(showToast=true){try{const d=await fetchDonki(state.settings.nasaKey||'DEMO_KEY',7);state.donki=d;renderSolarEvents();if(showToast)toast('NASA DONKIを更新しました')}catch(e){if(showToast)toast(`DONKI取得失敗: ${e.message}`)}}
